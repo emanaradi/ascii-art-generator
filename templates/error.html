@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASCII Art Web</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+      }
+
+      body {
+        font-family:
+          "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+        background: #2a2031;
+
+        min-height: 100vh;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-right: 5%;
+        padding-left: 5%;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: auto;
+        background-color: #2d2531;
+        padding: 20px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+      }
+
+      .fixed {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #e0c2e448;
+
+        width: 100%;
+        margin: 0;
+
+        font-size: clamp(80px, 20vw, 300px);
+        font-weight: bold;
+        text-align: center;
+
+        z-index: -1;
+        white-space: nowrap;
+      }
+
+      .fixed-1 {
+        top: 0;
+        animation: moveDown 8s linear infinite;
+        z-index: -1;
+      }
+
+      @keyframes moveDown {
+        from {
+          top: -20%;
+        }
+
+        to {
+          top: 120%;
+        }
+      }
+
+      .moon-astronaut {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: #5b4965b1;
+        border-radius: 15px;
+        flex-wrap: wrap;
+
+        img:first-child {
+          width: 70%;
+        }
+        img:last-child {
+          width: 30%;
+        }
+      }
+
+      .message {
+        font-size: medium;
+        text-align: center;
+        padding-top: 20px;
+        color: #e0c2e4;
+
+        p {
+          font-weight: lighter;
+          color: #826d84;
+        }
+
+        p:first-child {
+          font-weight: bold;
+          color: #e0c2e4;
+          text-transform: uppercase;
+          padding-bottom: 10px;
+        }
+      }
+
+      button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 25px;
+        border: none;
+        border-radius: 8px;
+        background-color: #e0c2e4;
+        color: #201a25;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1 class="fixed">OOOOPSS</h1>
+      <h1 class="fixed fixed-1">OOOOPSS</h1>
+
+      <div class="moon-astronaut">
+        <img class="moon-img" src="/assets/moon.png" alt="moon" />
+        <img
+          class="astronaut-img"
+          src="/assets/astronaut.png"
+          alt="astronaut"
+        />
+      </div>
+      <div class="message">
+        <p>{{ . }}</p>
+
+        {{ if eq . "404 Not Found" }}
+        <p>
+          It looks like you got lost in space... The page you're looking for
+          doesn't exist.
+        </p>
+        {{ end }} {{ if eq . "400 Bad Request" }}
+        <p>
+          It looks like you submitted a bad request. Please check your input and
+          try again.
+        </p>
+        {{ end }} {{ if eq . "405 Method Not Allowed" }}
+        <p>
+          Your request method isn't allowed in this space... Please try again.
+        </p>
+        {{ end }} {{ if eq . "500 Internal Server Error" }}
+        <p>Something went wrong on our end... Please try again later.</p>
+        {{ end }}
+
+        <button onclick="window.location.href = '/'">Go back to earth</button>
+      </div>
+    </div>
+  </body>
+</html>

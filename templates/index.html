@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASCII Art Web</title>
+
+    <style>
+      body {
+        font-family: Arial;
+        background: linear-gradient(90deg, #463850 23%, #201a25 100%);
+        margin: 0;
+        padding: 40px 20px;
+        color: #ffffff;
+      }
+
+      .main-container {
+        max-width: 1200px;
+        margin: auto;
+        background-color: #2d2531;
+        padding: 25px 30px 25px 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 30px;
+      }
+
+      .form-container,
+      .img-container {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+
+      .img-container {
+        flex: 1;
+        min-width: 0;
+        position: relative;
+        max-width: 100%;
+        overflow: hidden;
+      }
+
+      .img-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+      }
+
+      .img-container::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.25),
+          transparent
+        );
+
+        animation: shimmer 3s ease-in-out infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          left: -100%;
+        }
+
+        100% {
+          left: 200%;
+        }
+      }
+
+      h1 {
+        text-align: center;
+        color: #e0c2e4;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #b9aeba;
+        margin-bottom: 30px;
+      }
+
+      label {
+        font-weight: bold;
+        display: block;
+        margin-top: 20px;
+        margin-bottom: 8px;
+      }
+
+      textarea {
+        width: 100%;
+        height: 140px;
+        padding: 15px;
+        box-sizing: border-box;
+        border: 1px solid #66566d;
+        border-radius: 8px;
+        background-color: #201a25;
+        color: #ffffff;
+        font-size: 16px;
+      }
+
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #66566d;
+        border-radius: 8px;
+        background-color: #201a25;
+        color: #ffffff;
+        font-size: 16px;
+      }
+
+      button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 25px;
+        border: none;
+        border-radius: 8px;
+        background-color: #e0c2e4;
+        color: #201a25;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .result {
+        margin-top: 35px;
+        background-color: #201a25;
+        padding: 20px;
+        border: 1px solid #59495f;
+        border-radius: 10px;
+        overflow-x: auto;
+        width: 100%;
+        box-sizing: border-box;
+        word-wrap: break-word;
+        overflow-x: auto;
+      }
+
+      .result h2 {
+        color: #e0c2e4;
+      }
+
+      pre {
+        white-space: pre;
+        font-family: monospace;
+        color: #ffffff;
+      }
+
+      small {
+        color: #93819f;
+      }
+
+      button:disabled {
+        background: #675972;
+        cursor: not-allowed;
+      }
+
+      .export-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: space-between;
+        align-items: center;
+        flex: 1;
+        width: 100%;
+
+        button {
+          flex: 1;
+          width: 50%;
+        }
+      }
+
+      @media (max-width: 1300px) {
+        .form-container {
+          width: 100%;
+        }
+        .img-container {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="main-container">
+      <div class="img-container">
+        <img src="/assets/player.jpeg" alt="Player Image" />
+      </div>
+      <div class="form-container">
+        <h1>ASCII Art Generator</h1>
+
+        <p class="subtitle">
+          Enter your text, choose a banner style, and generate your ASCII art.
+        </p>
+
+        <form method="POST" action="/ascii-art">
+          <label for="text">Enter your text:</label>
+
+          <textarea
+            id="text"
+            name="text"
+            placeholder="Type something..."
+          ></textarea>
+
+          <label for="banner">Choose a banner:</label>
+
+          <select id="banner" name="banner">
+            <option value="standard">Standard</option>
+            <option value="shadow">Shadow</option>
+            <option value="thinkertoy">Thinkertoy</option>
+          </select>
+
+          <button type="submit">Generate ASCII Art</button>
+        </form>
+        <form method="GET" action="/">
+          <button type="submit" {{if not .Result}}disabled{{end}}>Clear</button>
+        </form>
+
+        <div class="result">
+          <small>Your art will appear here</small>
+
+          {{if .Result}}
+          <pre id="ascii-art">{{.Result}}</pre>
+          {{else}} {{end}}
+        </div>
+        <div class="export-buttons">
+          <button onClick="{exportTxt()}" {{if not .Result}}disabled{{end}}>
+            Export as txt
+          </button>
+
+          <button
+            type="button"
+            onclick="exportPng()"
+            {{if
+            not
+            .Result}}disabled{{end}}
+          >
+            Export as png
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      function exportTxt() {
+        const text = document.getElementById("ascii-art").innerText;
+
+        fetch("/export-txt", { method: "POST", body: text })
+          .then((response) => {
+            if (!response.ok) throw new Error("Failed to export file");
+            return response.blob();
+          })
+          .then((blob) => {
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "ascii-art.txt";
+            a.click();
+
+            URL.revokeObjectURL(url);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
+
+      function exportPng() {
+        const text = document.getElementById("ascii-art").innerText;
+        const lines = text.split("\n");
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        ctx.font = "16px monospace";
+
+        let maxWidth = 0;
+
+        for (const line of lines) {
+          const width = ctx.measureText(line).width;
+
+          if (width > maxWidth) {
+            maxWidth = width;
+          }
+        }
+
+        canvas.width = maxWidth + 40;
+        canvas.height = lines.length * 20 + 40;
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "black";
+        ctx.font = "16px monospace";
+
+        for (let i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], 20, 30 + i * 20);
+        }
+
+        canvas.toBlob(function (blob) {
+          fetch("/export-png", {
+            method: "POST",
+            body: blob,
+          })
+            .then(function (response) {
+              return response.blob();
+            })
+            .then(function (file) {
+              const url = URL.createObjectURL(file);
+
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "ascii-art.png";
+              a.click();
+
+              URL.revokeObjectURL(url);
+            });
+        }, "image/png");
+      }
+    </script>
+  </body>
+</html>
