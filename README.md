@@ -16,6 +16,12 @@ The application supports three banner styles:
 
 ---
 
+## Demo
+
+![Demo of the webapp](./assets/Demo.gif)
+
+---
+
 ## Features
 
 - Generates ASCII art through a web interface.
@@ -41,34 +47,36 @@ The application supports three banner styles:
 
 ## Project Structure
 
+```text
 ascii-art-web-dockerize/
 │
 ├── main/
-│ └── main.go
+│   └── main.go
 │
 ├── banners/
-│ ├── shadow.txt
-│ ├── standard.txt
-│ └── thinkertoy.txt
+│   ├── shadow.txt
+│   ├── standard.txt
+│   └── thinkertoy.txt
 │
 ├── templates/
-│ ├── index.html
-│ └── error.html
+│   ├── index.html
+│   └── error.html
 │
 ├── assets/
-│ ├── astronaut.png
-│ ├── moon.png
-│ └── player.jpeg
+│   ├── astronaut.png
+│   ├── moon.png
+│   └── player.jpeg
 │
 ├── ascii.go
 ├── banners.go
 ├── handlers.go
 ├── loader.go
+├── ascii_test.go
 ├── Dockerfile
 ├── .dockerignore
-├── ascii_test.go
 ├── go.mod
 └── README.md
+```
 
 ### File Description
 
