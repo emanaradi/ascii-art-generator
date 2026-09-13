@@ -429,6 +429,11 @@ The interface includes:
 - CSS
 - Go `net/http`
 - Go `html/template`
+- Go `strconv`
+- Go `strings`
+- Go `image`
+- Go `image/draw`
+- Go `image/png`
 - Go standard library
 
 No external Go packages are used.
