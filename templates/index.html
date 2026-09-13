@@ -172,7 +172,7 @@
         flex: 1;
         width: 100%;
 
-        button {
+        form {
           flex: 1;
           width: 50%;
         }
@@ -232,98 +232,21 @@
           {{else}} {{end}}
         </div>
         <div class="export-buttons">
-          <button onClick="{exportTxt()}" {{if not .Result}}disabled{{end}}>
-            Export as txt
-          </button>
+          <form method="POST" action="/export-txt">
+            <textarea name="ascii-art" hidden>{{.Result}}</textarea>
+            <button type="submit" {{if not .Result}}disabled{{end}}>
+              Export as txt
+            </button>
+          </form>
 
-          <button
-            type="button"
-            onclick="exportPng()"
-            {{if
-            not
-            .Result}}disabled{{end}}
-          >
-            Export as png
-          </button>
+          <form method="POST" action="/export-png">
+            <textarea name="ascii-art" hidden>{{.Result}}</textarea>
+            <button type="submit" {{if not .Result}}disabled{{end}}>
+              Export as png
+            </button>
+          </form>
         </div>
       </div>
     </div>
-    <script>
-      function exportTxt() {
-        const text = document.getElementById("ascii-art").innerText;
-
-        fetch("/export-txt", { method: "POST", body: text })
-          .then((response) => {
-            if (!response.ok) throw new Error("Failed to export file");
-            return response.blob();
-          })
-          .then((blob) => {
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "ascii-art.txt";
-            a.click();
-
-            URL.revokeObjectURL(url);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      }
-
-      function exportPng() {
-        const text = document.getElementById("ascii-art").innerText;
-        const lines = text.split("\n");
-
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        ctx.font = "16px monospace";
-
-        let maxWidth = 0;
-
-        for (const line of lines) {
-          const width = ctx.measureText(line).width;
-
-          if (width > maxWidth) {
-            maxWidth = width;
-          }
-        }
-
-        canvas.width = maxWidth + 40;
-        canvas.height = lines.length * 20 + 40;
-
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = "black";
-        ctx.font = "16px monospace";
-
-        for (let i = 0; i < lines.length; i++) {
-          ctx.fillText(lines[i], 20, 30 + i * 20);
-        }
-
-        canvas.toBlob(function (blob) {
-          fetch("/export-png", {
-            method: "POST",
-            body: blob,
-          })
-            .then(function (response) {
-              return response.blob();
-            })
-            .then(function (file) {
-              const url = URL.createObjectURL(file);
-
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "ascii-art.png";
-              a.click();
-
-              URL.revokeObjectURL(url);
-            });
-        }, "image/png");
-      }
-    </script>
   </body>
 </html>

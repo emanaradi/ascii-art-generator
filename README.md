@@ -254,7 +254,7 @@ The main routes are:
 | `POST` | `/export-txt` | Exports the generated ASCII art as a TXT file.                            |
 | `POST` | `/export-png` | Exports the generated ASCII art as a PNG image.                           |
 
-The server runs on port `8080`.
+The server runs on port `8081`.
 
 ---
 
@@ -262,7 +262,7 @@ The server runs on port `8080`.
 
 The main webpage contains a form that sends the user's input to the `/ascii-art` endpoint.
 
-The user enters text using a <textarea> and selects a banner using a <select> element.
+The user enters text using a `<textarea>` and selects a banner using a `<select>` element.
 
 When the user clicks the Generate button, the browser sends a `POST` request containing the selected text and banner.
 
@@ -340,15 +340,7 @@ The `reset` button resets the form fields to their original values without requi
 
 ### 8. Export as TXT
 
-The application provides a JavaScript function for exporting the generated ASCII art as a TXT file.
-
-The JavaScript:
-
-1. Retrieves the generated ASCII art from the page.
-2. Sends the ASCII art to the `/export-txt` endpoint
-3. using a `POST` request.
-4. Receives the TXT file from the Go server.
-5. Downloads the file as `ascii-art.txt`.
+The application allows exporting the generated ASCII art as a TXT file.
 
 The Go server handles the `/export-txt` request using the `ExportTXTHandler`.
 
@@ -358,20 +350,11 @@ The handler reads the ASCII art data and sends it back to the browser using the 
 - `Content-Length` specifies the size of the file.
 - `Content-Disposition` informs the browser to download the response as a txt file.
 
-The export uses both JavaScript and the Go server.
+The export uses the Go server only.
 
 ### 9. Export as PNG
 
-The application provides a JavaScript function for exporting the generated ASCII art as a PNG image.
-
-The JavaScript:
-
-1. Retrieves the generated ASCII art from the page.
-2. Creates a canvas and draws the ASCII art using a monospace font.
-3. Converts the canvas into PNG data.
-4. Sends the PNG data to the `/export-png` endpoint.
-5. Receives the PNG file from the Go server.
-6. Downloads the file as `ascii-art.png`.
+The application allows exporting the generated ASCII art as a PNG image.
 
 The Go server handles the `/export-png` request using the `ExportPNGHandler`.
 
@@ -381,7 +364,7 @@ The handler reads the PNG data and sends it back to the browser using the requir
 - `Content-Length` specifies the size of the file.
 - `Content-Disposition` informs the browser to download the response as png image.
 
-The export uses both JavaScript and the Go server.
+The export uses the Go server only.
 
 ---
 
@@ -444,7 +427,6 @@ The interface includes:
 - Go
 - HTML
 - CSS
-- JavaScript
 - Go `net/http`
 - Go `html/template`
 - Go standard library

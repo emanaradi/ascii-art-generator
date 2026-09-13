@@ -2,9 +2,12 @@ package asciiartweb
 
 import (
 	"html/template"
-	"io"
 	"net/http"
 	"strconv"
+	"strings"
+	"image"
+	"image/draw"
+	"image/png"
 )
 
 type PageData struct {
@@ -106,23 +109,19 @@ func ExportTXTHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := io.ReadAll(r.Body)
-	if err != nil {
+	art := r.FormValue("art")
+
+	if art == "" {
 		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
 		return
 	}
 
-	if len(data) == 0 {
-		ErrorHandler(w, http.StatusBadRequest, "400 Bad Request")
-		return
-	}
-
 	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	w.Header().Set("Content-Length", strconv.Itoa(len(art)))
 	w.Header().Set("Content-Disposition", `attachment; filename="ascii-art.txt"`)
 
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(data)
+	_, err := w.Write([]byte(art))
 	if err != nil {
 		return
 	}
@@ -134,22 +133,46 @@ func ExportPNGHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := io.ReadAll(r.Body)
-	if err != nil {
-		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
-		return
+	art := r.FormValue("ascii-art")
+
+	lines := strings.Split(art, "\n")
+
+	charWidth:=8
+	charHeight:=16
+
+	padding:=20
+
+	maxLength :=0
+
+	for _, line := range lines {
+		if len(line) > maxLength {
+			maxLength = len(line)
+		}
 	}
 
-	if len(data) == 0 {
-		ErrorHandler(w, http.StatusBadRequest, "400 Bad Request")
-		return
-	}
+	width := maxLength* charWidth +padding*2
+	height := len(lines)*charHeight + padding*2
+
+	img := image.NewRGBA(
+		image.Rect(0,0,width,height),
+	)
+
+	draw.Draw(
+		img,
+		img.Bounds(),
+		image.White,
+		image.Point{},
+		draw.Src,
+	)
 
 	w.Header().Set("Content-Type", "image/png")
-	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	// w.Header().Set("Content-Length", strconv.Itoa(len(art)))
 	w.Header().Set("Content-Disposition", `attachment; filename="ascii-art.png"`)
 
-	w.Write(data)
+	err := png.Encode(w, img)
+	if err != nil {
+		return
+	}
 }
 
 func isValidText(text string) bool {
