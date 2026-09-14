@@ -109,7 +109,7 @@ func ExportTXTHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	art := r.FormValue("art")
+	art := r.FormValue("ascii-art")
 
 	if art == "" {
 		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
@@ -166,7 +166,7 @@ func ExportPNGHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	w.Header().Set("Content-Type", "image/png")
-	// w.Header().Set("Content-Length", strconv.Itoa(len(art)))
+	w.Header().Set("Content-Length", strconv.Itoa(len(art)))
 	w.Header().Set("Content-Disposition", `attachment; filename="ascii-art.png"`)
 
 	err := png.Encode(w, img)
