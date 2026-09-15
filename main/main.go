@@ -17,6 +17,7 @@ func main() {
 	mux.HandleFunc("/ascii-art", asciiartweb.ASCIIArtHandler)
 	mux.HandleFunc("/export-png", asciiartweb.ExportPNGHandler)
 	mux.HandleFunc("/export-txt", asciiartweb.ExportTXTHandler)
+	mux.HandleFunc("/export-html", asciiartweb.ExportHTMLHandler)
 
 	mux.Handle(
 		"/assets/",

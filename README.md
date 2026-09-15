@@ -35,7 +35,7 @@ The application supports three banner styles:
 - Displays the generated ASCII art while preserving spaces and line breaks.
 - Includes a Clear button to reset the form.
 - Handles invalid requests using appropriate HTTP status codes.
-- Supports exporting the ascii art into `.txt` and `.png` formats.
+- Supports exporting the ascii art into `.txt`, `html`, and `.png` formats.
 - Serves static assets such as images.
 - Responsive web interface for different screen sizes.
 - Animated visual elements and images effects using CSS.
@@ -129,9 +129,10 @@ The webpage allows the user to:
 2. Select a banner style.
 3. Click `Generate ASCII Art`.
 4. View the generated ASCII art.
-5. Click `Clear` to reset the form.
-6. Click `Export as txt` to export the ascii-art as text file.
+5. Click `Export as txt` to export the ascii-art as text file.
+6. Click `Export as html` to export the ascii-art as html file.
 7. Click `Export as png` to export the ascii-art as png image.
+8. Click `Clear` to reset the form.
 
 ---
 
@@ -145,9 +146,9 @@ The final Docker image uses **Alpine Linux** because it is a lightweight Linux d
 
 Using Alpine helps:
 
-- Reducing the ifnal Docker image size.
+- Reduce the final Docker image size.
 - Reduce the amout of unnecessary software included in the container.
-- Make the ocntainer faster to build and start.
+- Make the container faster to build and start.
 - Provide a minimal environment containing only what is needed to run the application.
 
 The Go compiler and build tools are only required while building the application, so they are kept in the `golang:1.23-alpine` builder stage and are not included in the final image.
@@ -252,6 +253,7 @@ The main routes are:
 | `POST` | `/ascii-art`  | Receives the user's text and selected banner and generates the ascii art. |
 | `GET`  | `/assets/`    | Serves static assets such as images.                                      |
 | `POST` | `/export-txt` | Exports the generated ASCII art as a TXT file.                            |
+| `POST` | `/export-html` | Exports the generated ASCII art as a HTML file.                            |
 | `POST` | `/export-png` | Exports the generated ASCII art as a PNG image.                           |
 
 The server runs on port `8081`.
@@ -320,7 +322,9 @@ After the ASCII art is generated, the server sends the result back to the HTML t
 
 The result is displayed inside a `<pre>` element:
 
+```html
 <pre>{{.Result}}</pre>
+```
 
 The `<pre>` tag is used because ASCII art depends on exact spaces and line breaks.
 
@@ -332,7 +336,9 @@ This prevents the browser from changing the formatting of the generated ASCII ar
 
 The webpage includes a Clear button that resets the form:
 
+```html
 <button type="reset">Clear</button>
+```
 
 The `reset` button resets the form fields to their original values without requiring JavaScript.
 
@@ -352,9 +358,33 @@ The handler reads the ASCII art data and sends it back to the browser using the 
 
 The export uses the Go server only.
 
-### 9. Export as PNG
 
-The application allows exporting the generated ASCII art as a PNG image.
+### 9. Export as HTML
+
+The application allows exporting the generated ASCII art as a HTML file.
+
+The Go server handles the `/export-html` request using the `ExportHTMLHandler`.
+
+The handler reads the ASCII art data, creates html content using the generated ascii art, then sends the response back to the browser using the required HTTP headers:
+
+- `Content-Type` specifices the type of file being strcutured.
+- `Content-Disposition` informs the browser to download the response as a html file.
+
+The export uses the Go server only.
+
+
+### 10. Export as PNG
+
+The application provides a JavaScript function for exporting the generated ASCII art as a PNG image.
+
+The JavaScript:
+
+1. Retrieves the generated ASCII art from the page.
+2. Creates a canvas and draws the ASCII art using a monospace font.
+3. Converts the canvas into PNG data.
+4. Sends the PNG data to the `/export-png` endpoint.
+5. Receives the PNG file from the Go server.
+6. Downloads the file as `ascii-art.png`.
 
 The Go server handles the `/export-png` request using the `ExportPNGHandler`.
 
@@ -364,11 +394,11 @@ The handler reads the PNG data and sends it back to the browser using the requir
 - `Content-Length` specifies the size of the file.
 - `Content-Disposition` informs the browser to download the response as png image.
 
-The export uses the Go server only.
+The export uses both JavaScript and the Go server.
 
 ---
 
-### 10. Error Handling
+### 11. Error Handling
 
 The application includes a custom error page for handling unsuccessful requests.
 
@@ -427,13 +457,10 @@ The interface includes:
 - Go
 - HTML
 - CSS
+- JavaScript 
 - Go `net/http`
 - Go `html/template`
-- Go `strconv`
-- Go `strings`
-- Go `image`
-- Go `image/draw`
-- Go `image/png`
+- GO `html`
 - Go standard library
 
 No external Go packages are used.

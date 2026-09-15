@@ -1,13 +1,11 @@
 package asciiartweb
 
 import (
+	"html"
 	"html/template"
+	"io"
 	"net/http"
 	"strconv"
-	"strings"
-	"image"
-	"image/draw"
-	"image/png"
 )
 
 type PageData struct {
@@ -28,13 +26,13 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	template, err := template.ParseFiles("templates/index.html")
+	templ, err := template.ParseFiles("templates/index.html")
 	if err != nil {
-		ErrorHandler(w, http.StatusNotFound, "404 Not Found")
+		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
 		return
 	}
 
-	err = template.Execute(w, nil)
+	err = templ.Execute(w, nil)
 
 	if err != nil {
 		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
@@ -56,16 +54,12 @@ func ASCIIArtHandler(w http.ResponseWriter, r *http.Request) {
 	text := r.FormValue("text")
 	banner, err := GetBanner(r.FormValue("banner"))
 
-	if err != nil {
-		banner, _ = GetBanner("standard")
-	}
-
-	if len(banner) < 95 {
-		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
+	if len(banner) < 95 || err != nil {
+		ErrorHandler(w, http.StatusNotFound, "404 Not Found")
 		return
 	}
 
-	if text == "" || !isValidText(text) || len(text) > 100 {
+	if text == "" || !isValidText(text) {
 		ErrorHandler(w, http.StatusBadRequest, "400 Bad Request")
 		return
 	}
@@ -87,18 +81,6 @@ func ASCIIArtHandler(w http.ResponseWriter, r *http.Request) {
 	err = template.Execute(w, data)
 	if err != nil {
 		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
-		return
-	}
-}
-
-func ErrorHandler(w http.ResponseWriter, statusCode int, message string) {
-	template, _ := template.ParseFiles("templates/error.html")
-
-	w.WriteHeader(statusCode)
-
-	err := template.Execute(w, message)
-
-	if err != nil {
 		return
 	}
 }
@@ -127,7 +109,7 @@ func ExportTXTHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ExportPNGHandler(w http.ResponseWriter, r *http.Request) {
+func ExportHTMLHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		ErrorHandler(w, http.StatusMethodNotAllowed, "405 Method Not Allowed")
 		return
@@ -135,56 +117,86 @@ func ExportPNGHandler(w http.ResponseWriter, r *http.Request) {
 
 	art := r.FormValue("ascii-art")
 
-	lines := strings.Split(art, "\n")
-
-	charWidth:=8
-	charHeight:=16
-
-	padding:=20
-
-	maxLength :=0
-
-	for _, line := range lines {
-		if len(line) > maxLength {
-			maxLength = len(line)
-		}
+	if art == "" {
+		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
+		return
 	}
 
-	width := maxLength* charWidth +padding*2
-	height := len(lines)*charHeight + padding*2
+	htmlContent := `<!DOCTYPE html>
+	<html lang="eng">
+	<head>
+		<meta charset="UTF-8">
+		<title>ASCII Art</title>
+		<style>
+		body {
+			background-color: white;
+			margin: 20px;
+			}
 
-	img := image.NewRGBA(
-		image.Rect(0,0,width,height),
-	)
+		pre {
+			font-family: monospace;
+			font-size: 16px;
+			}
+		</style>
+	</head>
+	<body>
+		<pre> ` + html.EscapeString(art) + `</pre>
+	</body>
+	</html>`
 
-	draw.Draw(
-		img,
-		img.Bounds(),
-		image.White,
-		image.Point{},
-		draw.Src,
-	)
+	w.Header().Set("Content-Type", "text/html")
+	w.Header().Set("Content-Disposition", `attachment; filename="ascii-art.html"`)
+
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write([]byte(htmlContent))
+	if err != nil {
+		return
+	}
+}
+
+func ExportPNGHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		ErrorHandler(w, http.StatusMethodNotAllowed, "405 Method Not Allowed")
+		return
+	}
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		ErrorHandler(w, http.StatusInternalServerError, "500 Internal Server Error")
+		return
+	}
+
+	if len(data) == 0 {
+		ErrorHandler(w, http.StatusBadRequest, "400 Bad Request")
+		return
+	}
 
 	w.Header().Set("Content-Type", "image/png")
-	w.Header().Set("Content-Length", strconv.Itoa(len(art)))
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 	w.Header().Set("Content-Disposition", `attachment; filename="ascii-art.png"`)
 
-	err := png.Encode(w, img)
+	w.Write(data)
+}
+
+// =========================== HELPERS ===========================
+
+func ErrorHandler(w http.ResponseWriter, statusCode int, message string) {
+	template, _ := template.ParseFiles("templates/error.html")
+
+	w.WriteHeader(statusCode)
+
+	err := template.Execute(w, message)
+
 	if err != nil {
 		return
 	}
 }
 
 func isValidText(text string) bool {
-    for _, char := range text {
-        if char == '\n' || char == '\r' {
-            continue
-        }
-
-        if char < ' ' || char > '~' {
-            return false
-        }
-    }
-
-    return true
+	for _, char := range text {
+		if char > ' ' && char < '~' {
+			return true
+		}
+	}
+	return false
 }
