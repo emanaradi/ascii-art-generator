@@ -199,7 +199,7 @@ docker ps -a
 docker stop ascii-art-web-dockerize
 ```
 
-### 5. start the ocntainer again
+### 5. start the container again
 
 ```bash
 docker start ascii-art-web-dockerize
